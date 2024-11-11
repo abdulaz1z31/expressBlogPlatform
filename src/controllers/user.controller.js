@@ -5,13 +5,14 @@ import {
   refreshTime,
 } from "../config/index.config.js";
 import { User } from "../database/models/index.model.js";
+import { createTokens } from "../helpers/jsonwebtoken.helprer.js";
 
-import { ApiError } from "../utils/index.js";
+import { ApiError, logger, statusCodes } from "../utils/index.js";
 import jwt from "jsonwebtoken";
 
 export const registerUser = async (req, res, next) => {
   try {
-    const { email } = req.body;
+    const { email} = req.body;
     const currentUser = await User.findOne({ email });
 
     if (!currentUser) {
@@ -43,7 +44,7 @@ export const loginUser = async (req, res, next) => {
     }
 
     const passwordIsEqual = await currentUser.compare(password);
-
+    logger.info(passwordIsEqual)
     if (!passwordIsEqual) {
       return res
         .status(statusCodes.BAD_REQUEST)
@@ -51,20 +52,16 @@ export const loginUser = async (req, res, next) => {
     }
 
     const payload = {
-      id: _id,
-      sub: email,
-      role: currentUser.role,
-    };
-    const accessToken = jwt.sign(payload, accessKey, {
-      expiresIn: accessTime,
-    });
-    const refreshToken = jwt.sign(payload, refreshKey, {
-      expiresIn: refreshTime,
-    });
-    return res.send({
-      accessToken,
-      refreshToken,
-    });
+      id:currentUser._id,
+      name: currentUser.name,
+      email:currentUser.email
+     
+  }
+  const token = createTokens(payload)
+  
+  
+
+  res.status(200).json({ message: "User logged in", token });
   } catch (error) {
     next(new ApiError(error.statusCode, error.message));
   }
