@@ -1,3 +1,4 @@
+import { hash, genSalt, compare } from "bcrypt";
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -8,10 +9,18 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["user", "admin", "superAdmin", "author"],
-      default: "user"
-    }
+      default: "user",
+    },
   },
   { timestamps: true }
 );
+userSchema.pre("save", async function () {
+  const salt = await genSalt(10);
+  const hashPassword = await hash(this.password, salt);
+  this.password = hashPassword;
+});
 
+userSchema.method("compare", function (userPassword) {
+  return compare(userPassword, this.password);
+});
 export const User = mongoose.model("User", userSchema);
