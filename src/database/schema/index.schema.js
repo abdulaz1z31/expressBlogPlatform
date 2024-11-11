@@ -1,0 +1,6 @@
+export * from "./article.schema.js"
+export * from "./cartegory.schema.js"
+export * from "./comment.schema.js"
+export * from "./course.schema.js"
+export * from "./user.schema.js"
+export * from "./login.shema.js"

@@ -1,0 +1,5 @@
+export * from "./article.routes.js"
+export * from "./cartegory.routes.js"
+export * from "./comment.routes.js"
+export * from "./course.routes.js"
+export * from "./user.routes.js"

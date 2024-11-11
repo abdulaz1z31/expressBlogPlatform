@@ -1,0 +1,5 @@
+export * from "./article.controller.js"
+export * from "./cartegory.controller.js"
+export * from "./comment.controller.js"
+export * from "./course.controller.js"
+export * from "./user.controller.js"
