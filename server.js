@@ -1,6 +1,6 @@
 import express from "express";
 import { port } from "./src/config/index.config.js";
-import { connectMongodb } from "./src/database/index.database.js";
+import { connectMongodb } from "./src/database/database.js";
 import {
   articleRouter,
   cartegoryRouter,
@@ -9,7 +9,7 @@ import {
   userRouter,
 } from "./src/routes/index.routes.js";
 import { rateLimit } from "express-rate-limit";
-import { errorMessages, statusCodes } from "./src/utils/index.js";
+import { errorMessages, logger, statusCodes } from "./src/utils/index.js";
 
 const app = express();
 
@@ -37,5 +37,5 @@ app.use((err, req, res, next) => {
 });
 app.listen(port, async () => {
   await connectMongodb();
-  console.log(`server is running on ${port} port`);
+  logger.info(`server is running on ${port} port`);
 });

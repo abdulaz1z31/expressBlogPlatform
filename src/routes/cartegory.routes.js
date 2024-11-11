@@ -6,7 +6,7 @@ import {
   getCategoryById,
   updateUserById,
 } from "../controllers/index.controller.js";
-import validationMiddleware from "../middlewares/index.middleware.js";
+import {validationMiddleware} from "../middlewares/index.middleware.js";
 import { categorySchema } from "../database/schema/cartegory.schema.js";
 
 export const cartegoryRouter = Router();

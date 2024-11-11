@@ -1,5 +1,5 @@
 import { ApiError } from "../utils/index.js";
-import { Category } from "../database/models/category.model.js";
+import { Category } from "../database/models/index.model.js";
 
 export const createCategory = async (req, res, next) => {
   try {
