@@ -8,11 +8,12 @@ import {
 } from "../controllers/index.controller.js";
 import { validationMiddleware } from "../middlewares/validation.middleware.js";
 import { commentSchema } from "../database/schema/index.schema.js";
+import { checkTokens, isSelfComment } from "../middlewares/index.middleware.js";
 
 export const commentRouter = Router();
 
-commentRouter.post("/comment", validationMiddleware(commentSchema), createComment);
-commentRouter.get("/comment", getAllComments);
-commentRouter.get("/comment/:id", getCommentById);
-commentRouter.post("/comment/:id", updateCommentById);
-commentRouter.delete("/comment/:id", deleteCommentById);
+commentRouter.post("/comment", checkTokens, validationMiddleware(commentSchema), createComment);
+commentRouter.get("/comment", checkTokens, getAllComments);
+commentRouter.get("/comment/:id", checkTokens, getCommentById);
+commentRouter.post("/comment/:id", checkTokens, isSelfComment("admin", "superAdmin"), updateCommentById);
+commentRouter.delete("/comment/:id", checkTokens, isSelfComment("admin", "superAdmin"), deleteCommentById);

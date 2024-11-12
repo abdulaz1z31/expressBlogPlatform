@@ -32,7 +32,9 @@ export const getCommentById = async (req, res, next) => {
 
 export const updateCommentById = async (req, res, next) => {
   try {
-    const comment = await Comment.findByIdAndUpdate(req.params.id, req.body, {
+    const commnet = await Comment.findById(req.params.id);
+    comment.content = req.body.content
+    const comment = await Comment.findByIdAndUpdate(req.params.id, commnet, {
       new: true,
     });
     if (!comment) throw new ApiError(404, "Comment not found");
