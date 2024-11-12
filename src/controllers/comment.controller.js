@@ -23,7 +23,9 @@ export const getAllComments = async (req, res, next) => {
 export const getCommentById = async (req, res, next) => {
   try {
     const comment = await Comment.findById(req.params.id);
-    if (!comment) throw new ApiError(404, "Comment not found");
+    if (!commnet) {
+      res.status(statusCodes.NOT_FOUND).send("Comment not found")
+    }
     res.status(200).json(comment);
   } catch (error) {
     next(new ApiError(error.statusCodes, error.message));
@@ -37,7 +39,9 @@ export const updateCommentById = async (req, res, next) => {
     const comment = await Comment.findByIdAndUpdate(req.params.id, commnet, {
       new: true,
     });
-    if (!comment) throw new ApiError(404, "Comment not found");
+    if (!commnet) {
+      res.status(statusCodes.NOT_FOUND).send("Comment not found")
+    }
     res.status(200).json(comment);
   } catch (error) {
     next(new ApiError(error.statusCodes, error.message));
@@ -47,7 +51,9 @@ export const updateCommentById = async (req, res, next) => {
 export const deleteCommentById = async (req, res, next) => {
   try {
     const comment = await Comment.findByIdAndDelete(req.params.id);
-    if (!comment) throw new ApiError(404, "Comment not found");
+    if (!commnet) {
+      res.status(statusCodes.NOT_FOUND).send("Comment not found")
+    }
     res.status(200).json({ message: "Comment deleted successfully" });
   } catch (error) {
     next(new ApiError(error.statusCodes, error.message));
