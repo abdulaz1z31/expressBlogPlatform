@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  checkOtp,
   createUser,
   deleteUserById,
   getAllUsers,
@@ -19,6 +20,7 @@ export const userRouter = Router();
 
 userRouter.post("/register", validationMiddleware(userSchema), registerUser);
 userRouter.post("/login", validationMiddleware(loginSchema), loginUser);
+userRouter.post("/checkotp", checkTokens, checkOtp)//birinchi login qilib keyin active qiladi gan qildim 
 userRouter.post("/profile", checkTokens, userProfileController);
 userRouter.post("/admin", checkTokens, roleGuard("admin", "superAdmin"),  createUser);
 userRouter.get("/user", checkTokens, roleGuard("admin", "superAdmin"), getAllUsers);

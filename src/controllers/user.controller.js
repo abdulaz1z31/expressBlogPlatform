@@ -1,6 +1,6 @@
 import { User } from "../database/models/index.model.js";
-import { createTokens } from "../helpers/jsonwebtoken.helprer.js";
-
+import { otpGenerator , createTokens, sendMail} from "../helpers/index.helper.js";
+import {OTP} from "../database/models/index.model.js"
 import { ApiError, errorMessages, statusCodes } from "../utils/index.js";
 
 export const registerUser = async (req, res, next) => {
@@ -9,11 +9,17 @@ export const registerUser = async (req, res, next) => {
     const currentUser = await User.findOne({ email });
 
     if (!currentUser) {
-      console.log({ currentUser });
       const user = new User(req.body);
-      console.log({ user });
-
+      const oneTimePassword = otpGenerator()
+      await sendMail(email, "OTP", `this is your OTP: ${oneTimePassword}`);
       await user.save();
+
+      const db_otp = new OTP({
+        user_id: user._id,
+        otp_code: oneTimePassword,
+      });
+
+      await db_otp.save();
       return res.status(statusCodes.CREATED).send("created");
     }
     return res
@@ -24,6 +30,25 @@ export const registerUser = async (req, res, next) => {
     next(new ApiError(error.statusCode, error.message));
   }
 };
+
+export const checkOtp = async (req, res, next) => {
+  try {
+    const { otp } = req.body;
+    const userId = req.user._id;
+    const otpRecord = await OTP.findOne({ user_id: userId });
+
+    if ( otp === otpRecord.otp_code) {
+      await User.updateOne({ _id: userId }, { is_active: true });
+      res.status(200).send({
+        msg: "User actived successfully!",
+      });
+    } else {
+      throw new ApiError(400, "Invalid OTP");
+    }
+  } catch (error) {
+    next(new ApiError(error.statusCode, error.message));
+  }
+}
 
 export const loginUser = async (req, res, next) => {
   try {
