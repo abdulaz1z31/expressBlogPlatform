@@ -6,13 +6,13 @@ import {
   getCategoryById,
   updateUserById,
 } from "../controllers/index.controller.js";
-import {validationMiddleware} from "../middlewares/index.middleware.js";
+import {checkTokens, roleGuard, validationMiddleware} from "../middlewares/index.middleware.js";
 import { categorySchema } from "../database/schema/cartegory.schema.js";
 
 export const cartegoryRouter = Router();
 
-cartegoryRouter.post("/cartegory", validationMiddleware(categorySchema), createCategory);
-cartegoryRouter.get("/cartegory", getAllCategories);
-cartegoryRouter.get("/cartegory/:id", getCategoryById);
-cartegoryRouter.post("/cartegory/:id", updateUserById);
-cartegoryRouter.delete("/cartegory/:id", deleteCategoryById);
+cartegoryRouter.post("/cartegory", checkTokens, roleGuard("admin", "superAdmin"), validationMiddleware(categorySchema), createCategory);
+cartegoryRouter.get("/cartegory", checkTokens, roleGuard("admin", "superAdmin"), getAllCategories);
+cartegoryRouter.get("/cartegory/:id", checkTokens, roleGuard("admin", "superAdmin"), getCategoryById);
+cartegoryRouter.post("/cartegory/:id", checkTokens, roleGuard("admin", "superAdmin"), updateUserById);
+cartegoryRouter.delete("/cartegory/:id", checkTokens, roleGuard("admin", "superAdmin"), deleteCategoryById);
