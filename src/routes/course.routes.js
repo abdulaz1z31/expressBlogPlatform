@@ -7,12 +7,17 @@ import {
   updateCourseById,
 } from "../controllers/index.controller.js";
 import { courseSchema } from "../database/schema/index.schema.js";
-import { validationMiddleware } from "../middlewares/validation.middleware.js";
+
+import { 
+  validationMiddleware,
+  checkTokens,
+  roleGuard 
+} from "../middlewares/index.middleware.js";
 
 export const courseRouter = Router();
 
-courseRouter.post("/course", validationMiddleware(courseSchema), createCourse);
-courseRouter.get("/course", getAllCourses);
-courseRouter.get("/course/:id", getCourseById);
-courseRouter.post("/course/:id", updateCourseById);
-courseRouter.delete("/course/:id", deleteCourseById);
+courseRouter.post("/course", checkTokens, roleGuard("admin", "superAdmin"), validationMiddleware(courseSchema), createCourse);
+courseRouter.get("/course", checkTokens, roleGuard("admin", "superAdmin"), getAllCourses);
+courseRouter.get("/course/:id", checkTokens, roleGuard("admin", "superAdmin"), getCourseById);
+courseRouter.post("/course/:id", checkTokens, roleGuard("admin", "superAdmin"), updateCourseById);
+courseRouter.delete("/course/:id", checkTokens, roleGuard("admin", "superAdmin"), deleteCourseById);
