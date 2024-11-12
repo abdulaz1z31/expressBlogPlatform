@@ -1,14 +1,7 @@
-import {
-  accessKey,
-  accessTime,
-  refreshKey,
-  refreshTime,
-} from "../config/index.config.js";
 import { User } from "../database/models/index.model.js";
 import { createTokens } from "../helpers/jsonwebtoken.helprer.js";
 
 import { ApiError, logger, statusCodes } from "../utils/index.js";
-import jwt from "jsonwebtoken";
 
 export const registerUser = async (req, res, next) => {
   try {
@@ -66,6 +59,29 @@ export const loginUser = async (req, res, next) => {
     next(new ApiError(error.statusCode, error.message));
   }
 };
+
+
+
+export const userProfileController = async (req, res, next) => {
+  try {
+    const payload = req.user;
+    const currentUser = await User.findOne({ email: payload.email }).select({
+      password: 0,
+    });
+    if (!currentUser) {
+      return res
+        .status(statusCodes.NOT_FOUND)
+        .send(errorMessages.USER_NOT_FOUND);
+    }
+    return res.send(currentUser);
+  } catch (error) {
+    next(new ApiError(error.statusCodes, error.message));
+  }
+};
+
+
+
+
 
 export const createUser = (req, res, next) => {
   try {

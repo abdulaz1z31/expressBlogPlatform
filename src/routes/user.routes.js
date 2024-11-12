@@ -7,16 +7,18 @@ import {
   loginUser,
   registerUser,
   updateUserById,
+  userProfileController,
 } from "../controllers/index.controller.js";
 
 import { userSchema, loginSchema } from "../database/schema/index.schema.js";
 import { validationMiddleware } from "../middlewares/validation.middleware.js";
+import { checkTokens } from "../middlewares/checktoken.middleware.js";
 
 export const userRouter = Router();
 
 userRouter.post("/register", validationMiddleware(userSchema), registerUser);
 userRouter.post("/login", validationMiddleware(loginSchema), loginUser);
-userRouter.post("/profile");
+userRouter.post("/profile", checkTokens, userProfileController);
 userRouter.post("/user", validationMiddleware(userSchema), createUser);
 userRouter.get("/user", getAllUsers);
 userRouter.get("/user/:id", getUserById);
