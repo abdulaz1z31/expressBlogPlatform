@@ -1,11 +1,11 @@
 import { User } from "../database/models/index.model.js";
 import { createTokens } from "../helpers/jsonwebtoken.helprer.js";
 
-import { ApiError, logger, statusCodes } from "../utils/index.js";
+import { ApiError, errorMessages, statusCodes } from "../utils/index.js";
 
 export const registerUser = async (req, res, next) => {
   try {
-    const { email} = req.body;
+    const { email } = req.body;
     const currentUser = await User.findOne({ email });
 
     if (!currentUser) {
@@ -44,23 +44,18 @@ export const loginUser = async (req, res, next) => {
     }
 
     const payload = {
-      id:currentUser._id,
+      id: currentUser._id,
       name: currentUser.name,
-      email:currentUser.email,
-      role:currentUser.role
-     
-  }
-  const token = createTokens(payload)
-  
-  
+      email: currentUser.email,
+      role: currentUser.role,
+    };
+    const token = createTokens(payload);
 
-  res.status(200).json({ message: "User logged in", token });
+    res.status(200).json({ message: "User logged in", token });
   } catch (error) {
     next(new ApiError(error.statusCode, error.message));
   }
 };
-
-
 
 export const userProfileController = async (req, res, next) => {
   try {
@@ -79,13 +74,9 @@ export const userProfileController = async (req, res, next) => {
   }
 };
 
-
-
-
-
-export const createUser =async (req, res, next) => {
+export const createUser = async (req, res, next) => {
   try {
-    const { email} = req.body;
+    const { email } = req.body;
     const currentUser = await User.findOne({ email });
 
     if (!currentUser) {
@@ -101,34 +92,56 @@ export const createUser =async (req, res, next) => {
   }
 };
 
-export const getAllUsers = (req, res, next) => {
+export const getAllUsers = async (req, res, next) => {
   try {
-    res.status(200).send("ok");
+    const users = await User.find();
+    res.status(statusCodes.OK).send({ users });
   } catch (error) {
     next(new ApiError(error.statusCodes, error.message));
   }
 };
 
-export const getUserById = (req, res, next) => {
+export const getUserById = async (req, res, next) => {
   try {
-    res.status(200).send("ok");
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      res.status(statusCodes.NOT_FOUND).send({ message: "user not found" });
+    }
+    res.status(200).json(user);
   } catch (error) {
-    next(new ApiError(error.statusCodes, error.message));
+    next(new ApiError(error.statusCode, error.message));
   }
 };
 
-export const updateUserById = (req, res, next) => {
+export const updateUserById = async (req, res, next) => {
   try {
-    res.status(200).send("ok");
+    const { role } = req.user;
+    const updateData = { ...req.body, role };
+
+    const user = await User.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+    });
+
+    if (!user) {
+      return res
+        .status(statusCodes.NOT_FOUND)
+        .send({ message: "User not found" });
+    }
+
+    res.status(200).json(user);
   } catch (error) {
-    next(new ApiError(error.statusCodes, error.message));
+    next(new ApiError(error.statusCode, error.message));
   }
 };
 
-export const deleteUserById = (req, res, next) => {
+export const deleteUserById = async (req, res, next) => {
   try {
-    res.status(200).send("ok");
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      res.status(statusCodes.NOT_FOUND).send({ message: "user not found" });
+    }
+    res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
-    next(new ApiError(error.statusCodes, error.message));
+    next(new ApiError(error.statusCode, error.message));
   }
 };

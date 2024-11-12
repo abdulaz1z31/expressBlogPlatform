@@ -30,11 +30,11 @@ app.use((req, res) => {
   res.status(statusCodes.NOT_FOUND).send(errorMessages.NOT_FOUND);
 });
 
-app.use((err, req, res, next) => {
-  if (err) {
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ message: err });
-  }
-});
+// app.use((err, req, res, next) => {
+//   if (err) {
+//     res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ message: err });
+//   }
+// });
 app.listen(port, async () => {
   await connectMongodb();
   logger.info(`server is running on ${port} port`);
