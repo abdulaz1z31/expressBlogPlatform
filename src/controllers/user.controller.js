@@ -37,7 +37,6 @@ export const loginUser = async (req, res, next) => {
     }
 
     const passwordIsEqual = await currentUser.compare(password);
-    logger.info(passwordIsEqual)
     if (!passwordIsEqual) {
       return res
         .status(statusCodes.BAD_REQUEST)
@@ -47,7 +46,8 @@ export const loginUser = async (req, res, next) => {
     const payload = {
       id:currentUser._id,
       name: currentUser.name,
-      email:currentUser.email
+      email:currentUser.email,
+      role:currentUser.role
      
   }
   const token = createTokens(payload)
@@ -83,11 +83,21 @@ export const userProfileController = async (req, res, next) => {
 
 
 
-export const createUser = (req, res, next) => {
+export const createUser =async (req, res, next) => {
   try {
-    res.status(200).send("ok");
+    const { email} = req.body;
+    const currentUser = await User.findOne({ email });
+
+    if (!currentUser) {
+      const user = new User(req.body);
+      await user.save();
+      return res.status(statusCodes.CREATED).send("created");
+    }
+    return res
+      .status(statusCodes.CONFLICT)
+      .send(errorMessages.EMAIL_ALREADY_EXISTS);
   } catch (error) {
-    next(new ApiError(error.statusCodes, error.message));
+    next(new ApiError(error.statusCode, error.message));
   }
 };
 
