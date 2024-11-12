@@ -70,18 +70,18 @@ Ma'lumotlar bazasi quyidagi jadvallarni o'z ichiga oladi:
     npm install
 3. **Muhit o'zgaruvchilarini sozlash: .env faylida quyidagi o'zgaruvchilarni belgilang**:
 
-    PORT=5000
-    MONGO_URI=<MongoDB URI>
-    JWT_ACCESS_SECRET=<JWT secret key>
-    JWT_REFRESH_SECRET=<JWT secret key>
-    JWT_ACCESS_TIME=<JWT time>
-    JWT_REFRESH_TIME=<JWT time>
+   - PORT=5000
+   - MONGO_URI=<MongoDB URI>
+   - JWT_ACCESS_SECRET=<JWT secret key>
+   - JWT_REFRESH_SECRET=<JWT secret key>
+   - JWT_ACCESS_TIME=<JWT time>
+   - JWT_REFRESH_TIME=<JWT time>
 4. **Serverni ishga tushirish**:
-    npm run dev
+   - npm run dev
 
 5. **Texnologiyalar**
-    Node.js va Express.js - backend uchun
-    MongoDB - ma'lumotlar bazasi sifatida
-    Mongoose - MongoDB bilan oson ishlash uchun ORM
-    JWT (JSON Web Token) - autentifikatsiya uchun
-    bcrypt - parollarni xavfsiz saqlash uchun
+   - Node.js va Express.js - backend uchun
+   - MongoDB - ma'lumotlar bazasi sifatida
+   - Mongoose - MongoDB bilan oson ishlash uchun ORM
+   - JWT (JSON Web Token) - autentifikatsiya uchun
+   - bcrypt - parollarni xavfsiz saqlash uchun
