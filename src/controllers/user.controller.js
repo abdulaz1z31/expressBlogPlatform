@@ -1,6 +1,5 @@
-import { User } from "../database/models/index.model.js";
+import { User , OTP} from "../database/models/index.model.js";
 import { otpGenerator , createTokens, sendMail} from "../helpers/index.helper.js";
-import {OTP} from "../database/models/index.model.js"
 import { ApiError, errorMessages, statusCodes } from "../utils/index.js";
 
 export const registerUser = async (req, res, next) => {
@@ -170,3 +169,43 @@ export const deleteUserById = async (req, res, next) => {
     next(new ApiError(error.statusCode, error.message));
   }
 };
+//1
+export async function forgetPassword(req, res, next) {
+  try {
+    const { email } = req.body;
+    const userData = await User.findOne({email})
+    if (!userData) {
+      return res.status(404).send({
+        messgae:"user not found"
+      })
+    }    
+
+    const newPassword = v4()
+    const transporter = nodemailer.createTransport({
+      service:"gmail",
+      auth: {
+        user:process.env.USER_EMAIL,
+        pass:process.env.SMTP_PASSWORD
+      }
+    })
+  
+    await transporter.sendMail({
+      from:process.env.USER_EMAIL,
+      to: email,
+      subject: "Yangi parol",
+      html: `
+      <h1>
+        Siznign yangi parolingiz: ${newPassword}
+      </h1>
+      `
+    })
+
+    await User.updateOne(
+      {_id: userData._id},
+      {newPassword}
+    )
+    res.status(200).send(`password changed to : ${hashPassword}`)
+  } catch (error) {
+    next(error);
+  }
+}
