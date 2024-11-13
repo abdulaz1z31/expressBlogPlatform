@@ -13,7 +13,7 @@ import {
 } from "../controllers/index.controller.js";
 
 import { userSchema, loginSchema } from "../database/schema/index.schema.js";
-import { validationMiddleware } from "../middlewares/validation.middleware.js";
+import { pagination, validationMiddleware } from "../middlewares/validation.middleware.js";
 import { checkTokens } from "../middlewares/checktoken.middleware.js";
 import { isSelfRoleGuard, roleGuard } from "../middlewares/index.middleware.js";
 
@@ -25,7 +25,7 @@ userRouter.post("/checkotp", checkTokens, checkOtp)//birinchi login qilib keyin 
 userRouter.post("forget/password", forgetPasswrod)
 userRouter.post("/profile", checkTokens, userProfileController);
 userRouter.post("/admin", checkTokens, roleGuard("admin", "superAdmin"),  createUser);
-userRouter.get("/user", checkTokens, roleGuard("admin", "superAdmin"), getAllUsers);
+userRouter.get("/user", checkTokens, roleGuard("admin", "superAdmin"), pagination, getAllUsers);
 userRouter.get("/user/:id",checkTokens, isSelfRoleGuard("admin", "superAdmin"), getUserById);
 userRouter.post("/user/:id", checkTokens, isSelfRoleGuard("admin", "superAdmin"), updateUserById);
 userRouter.delete("/user/:id", checkTokens, isSelfRoleGuard("admin", "superAdmin"), deleteUserById);

@@ -117,11 +117,23 @@ export const createUser = async (req, res, next) => {
 };
 
 export const getAllUsers = async (req, res, next) => {
-  try {
-    const users = await User.find();
-    res.status(statusCodes.OK).send({ users });
+  try { 
+    const searchQuery = req.query.search ? { name: new RegExp(req.query.search, 'i') } : {}; 
+    const users = await User.find(searchQuery)
+      .skip(req.pagination.skip)
+      .limit(req.pagination.limit);
+
+    const totalUsers = await User.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalUsers / req.pagination.limit);
+
+    res.status(statusCodes.OK).send({
+      users,
+      currentPage: req.pagination.page,
+      totalPages,
+      totalUsers,
+    });
   } catch (error) {
-    next(new ApiError(error.statusCodes, error.message));
+    next(new ApiError(error.statusCodes || 500, error.message || 'Server Error'));
   }
 };
 
