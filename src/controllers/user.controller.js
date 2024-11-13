@@ -1,81 +1,33 @@
-import { User , OTP} from "../database/models/index.model.js";
-import { otpGenerator , createTokens, sendMail} from "../helpers/index.helper.js";
+import { User } from "../database/models/index.model.js";
+import { loginUserService, registerUserService } from "../service/index.service.js";
 import { ApiError, errorMessages, statusCodes } from "../utils/index.js";
 
 export const registerUser = async (req, res, next) => {
   try {
-    const { email } = req.body;
-    const currentUser = await User.findOne({ email });
-
-    if (!currentUser) {
-      const user = new User(req.body);
-      const oneTimePassword = otpGenerator()
-      await sendMail(email, "OTP", `this is your OTP: ${oneTimePassword}`);
-      await user.save();
-
-      const db_otp = new OTP({
-        user_id: user._id,
-        otp_code: oneTimePassword,
-      });
-
-      await db_otp.save();
+    const result = await registerUserService(req.body)
+    const {success, error} = result
+    if (success) {
       return res.status(statusCodes.CREATED).send("created");
+    } else {
+      return res.status(statusCodes.CONFLICT).send({ message : error.message});
     }
-    return res
-      .status(statusCodes.CONFLICT)
-      .send(errorMessages.EMAIL_ALREADY_EXISTS);
   } catch (error) {
     console.log(error);
     next(new ApiError(error.statusCode, error.message));
   }
 };
 
-export const checkOtp = async (req, res, next) => {
-  try {
-    const { otp } = req.body;
-    const userId = req.user._id;
-    const otpRecord = await OTP.findOne({ user_id: userId });
-
-    if ( otp === otpRecord.otp_code) {
-      await User.updateOne({ _id: userId }, { is_active: true });
-      res.status(200).send({
-        msg: "User actived successfully!",
-      });
-    } else {
-      throw new ApiError(400, "Invalid OTP");
-    }
-  } catch (error) {
-    next(new ApiError(error.statusCode, error.message));
-  }
-}
-
 export const loginUser = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    const currentUser = await User.findOne({ email });
-
-    if (!currentUser) {
-      return res
-        .status(statusCodes.NOT_FOUND)
-        .send(errorMessages.USER_NOT_FOUND);
+    const { email, password, otp } = req.body;
+    const result = await loginUserService({ email, password, otp })
+    const {success, error} = result;
+    if (success) {
+      const {token} = result;
+      res.status(statusCodes.OK).json({ message: "User logged in", token });
+    } else {
+      res.status(statusCodes.BAD_REQUEST).send(error.message)
     }
-
-    const passwordIsEqual = await currentUser.compare(password);
-    if (!passwordIsEqual) {
-      return res
-        .status(statusCodes.BAD_REQUEST)
-        .send(errorMessages.INVALID_CREDENTIALS);
-    }
-
-    const payload = {
-      id: currentUser._id,
-      name: currentUser.name,
-      email: currentUser.email,
-      role: currentUser.role,
-    };
-    const token = createTokens(payload);
-
-    res.status(200).json({ message: "User logged in", token });
   } catch (error) {
     next(new ApiError(error.statusCode, error.message));
   }
