@@ -48,7 +48,7 @@ export const loginUserService = async (userData) => {
         if (otpCode != otp) {
             throw new Error("OTP in not valid")
         }
-        await User.updateOne({_id: currentUser._id}, { is_active: true })
+        await User.updateOne({_id: currentUser._id}, { isActive: true })
         const payload = {
           id: currentUser._id,
           name: currentUser.name,
@@ -57,6 +57,22 @@ export const loginUserService = async (userData) => {
         };
         const token = createTokens(payload);
         return {success:true, error:false, token}
+      } catch (error) {
+        return {success:false, error}
+      }
+}
+
+export const userProfileService = async (payload) => {
+    try {
+        const currentUser = await User.findOne({ email: payload.email }).select({
+          password: 0,
+        });
+        if (!currentUser) {
+            throw Error(errorMessages.USER_NOT_FOUND)
+        } else {
+            return {success:true, error:false, user:currentUser}
+        }
+        
       } catch (error) {
         return {success:false, error}
       }

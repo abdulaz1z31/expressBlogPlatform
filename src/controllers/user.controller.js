@@ -1,5 +1,5 @@
 import { User } from "../database/models/index.model.js";
-import { loginUserService, registerUserService } from "../service/index.service.js";
+import { loginUserService, registerUserService, userProfileService } from "../service/index.service.js";
 import { ApiError, errorMessages, statusCodes } from "../utils/index.js";
 
 export const registerUser = async (req, res, next) => {
@@ -12,7 +12,6 @@ export const registerUser = async (req, res, next) => {
       return res.status(statusCodes.CONFLICT).send({ message : error.message});
     }
   } catch (error) {
-    console.log(error);
     next(new ApiError(error.statusCode, error.message));
   }
 };
@@ -33,20 +32,20 @@ export const loginUser = async (req, res, next) => {
   }
 };
 
+
 export const userProfileController = async (req, res, next) => {
   try {
     const payload = req.user;
-    const currentUser = await User.findOne({ email: payload.email }).select({
-      password: 0,
-    });
-    if (!currentUser) {
-      return res
-        .status(statusCodes.NOT_FOUND)
-        .send(errorMessages.USER_NOT_FOUND);
+    const result = await userProfileService(payload)
+    const {success, error} = result;
+    if (success) {
+      const { user } = result;
+      res.status(statusCodes.OK).json({ user })
+    } else {
+      res.status(statusCodes.NOT_FOUND).send(error.message)
     }
-    return res.send(currentUser);
   } catch (error) {
-    next(new ApiError(error.statusCodes, error.message));
+    next(new ApiError(error.statusCodes, error));
   }
 };
 
