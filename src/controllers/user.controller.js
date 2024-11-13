@@ -1,5 +1,5 @@
 import { User } from "../database/models/index.model.js";
-import { loginUserService, registerUserService, userProfileService } from "../service/index.service.js";
+import { changePasswordService, forgetPasswordService, loginUserService, registerUserService, userProfileService } from "../service/index.service.js";
 import { ApiError, errorMessages, statusCodes } from "../utils/index.js";
 
 export const registerUser = async (req, res, next) => {
@@ -49,6 +49,46 @@ export const userProfileController = async (req, res, next) => {
   }
 };
 
+
+export const forgetPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const result = await forgetPasswordService({email})
+    const {success, error} = result
+    console.log(result);
+    
+    if (success) {
+      res.status(statusCodes.OK).send({message: "we send link to your email"})
+    } else {
+      res.status(statusCodes.NOT_FOUND).send(error.message)
+    }
+  } catch (error) {
+    next(new ApiError(error.statusCodes, error));
+  }
+}
+
+
+export const changePassword = async (req, res, next) => {
+    try {
+      const userId = req.params.id
+      const {otp, newPassword} = req.body;
+      const data = {userId, otp, newPassword}
+      const result = await changePasswordService(data)
+      const {success, error} = result
+      if (success) {
+        res.status(statusCodes.OK).send("Password changet successfully")
+      } else {
+        res.status(statusCodes.BAD_REQUEST).send({message:error.message})
+      }
+
+    } catch (error) {
+      next(new ApiError(error.statusCodes, error));
+    }
+}
+
+
+
+
 export const createUser = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -66,6 +106,8 @@ export const createUser = async (req, res, next) => {
     next(new ApiError(error.statusCode, error.message));
   }
 };
+
+
 
 export const getAllUsers = async (req, res, next) => {
   try { 
@@ -132,43 +174,4 @@ export const deleteUserById = async (req, res, next) => {
     next(new ApiError(error.statusCode, error.message));
   }
 };
-//1
-export async function forgetPassword(req, res, next) {
-  try {
-    const { email } = req.body;
-    const userData = await User.findOne({email})
-    if (!userData) {
-      return res.status(404).send({
-        messgae:"user not found"
-      })
-    }    
 
-    const newPassword = v4()
-    const transporter = nodemailer.createTransport({
-      service:"gmail",
-      auth: {
-        user:process.env.USER_EMAIL,
-        pass:process.env.SMTP_PASSWORD
-      }
-    })
-  
-    await transporter.sendMail({
-      from:process.env.USER_EMAIL,
-      to: email,
-      subject: "Yangi parol",
-      html: `
-      <h1>
-        Siznign yangi parolingiz: ${newPassword}
-      </h1>
-      `
-    })
-
-    await User.updateOne(
-      {_id: userData._id},
-      {newPassword}
-    )
-    res.status(200).send(`password changed to : ${hashPassword}`)
-  } catch (error) {
-    next(error);
-  }
-}
