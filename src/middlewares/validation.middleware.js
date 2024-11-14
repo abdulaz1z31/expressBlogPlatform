@@ -1,10 +1,11 @@
-import { statusCodes } from "../utils/index.js";
+import { logger, statusCodes } from "../utils/index.js";
 
 export const validationMiddleware = (schema) => {
     return (req, res, next) => {
         const { error } = schema.validate(req.body);
         if (error) {
-            res.status(statusCodes.BAD_REQUEST).json({
+            logger.error(error.details.map(detail => detail.message))
+            return res.status(statusCodes.BAD_REQUEST).json({
                 error: "validationError",
                 details: error.details.map(detail => detail.message)
             });
