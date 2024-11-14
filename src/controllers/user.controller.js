@@ -1,5 +1,5 @@
 import { User } from "../database/models/index.model.js";
-import { changePasswordService, forgetPasswordService, loginUserService, registerUserService, userProfileService } from "../service/index.service.js";
+import { activeUserService, changePasswordService, createUserService, forgetPasswordService, loginUserService, registerUserService, userProfileService } from "../service/index.service.js";
 import { ApiError, errorMessages, statusCodes } from "../utils/index.js";
 
 export const registerUser = async (req, res, next) => {
@@ -18,8 +18,7 @@ export const registerUser = async (req, res, next) => {
 
 export const loginUser = async (req, res, next) => {
   try {
-    const { email, password, otp } = req.body;
-    const result = await loginUserService({ email, password, otp })
+    const result = await loginUserService(req.body)
     const {success, error} = result;
     if (success) {
       const {token} = result;
@@ -32,6 +31,19 @@ export const loginUser = async (req, res, next) => {
   }
 };
 
+export const activeUser = async (req, res, next) => {
+   try {
+     const result = await activeUserService(req.body)
+     const {success, error} = result
+     if (success) {
+       res.status(statusCodes.OK).send("You are activated successfully")
+     } else {
+       res.status(statusCodes.BAD_REQUEST).send(error.message)
+     }
+    } catch (error) {
+      next(new ApiError(error.statusCode, error.message));
+    }
+};
 
 export const userProfileController = async (req, res, next) => {
   try {
@@ -49,7 +61,6 @@ export const userProfileController = async (req, res, next) => {
   }
 };
 
-
 export const forgetPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -66,7 +77,6 @@ export const forgetPassword = async (req, res, next) => {
     next(new ApiError(error.statusCodes, error));
   }
 }
-
 
 export const changePassword = async (req, res, next) => {
     try {
@@ -86,26 +96,21 @@ export const changePassword = async (req, res, next) => {
     }
 }
 
-
-
-
 export const createUser = async (req, res, next) => {
   try {
-    const { email } = req.body;
-    const currentUser = await User.findOne({ email });
-
-    if (!currentUser) {
-      const user = new User(req.body);
-      await user.save();
+    const result = await createUserService(req.body)
+    const {success, error} = result
+    if (success) {
       return res.status(statusCodes.CREATED).send("created");
+    } else {
+      return res.status(statusCodes.BAD_REQUEST).send(error.message);
     }
-    return res
-      .status(statusCodes.CONFLICT)
-      .send(errorMessages.EMAIL_ALREADY_EXISTS);
   } catch (error) {
     next(new ApiError(error.statusCode, error.message));
   }
 };
+
+
 
 
 

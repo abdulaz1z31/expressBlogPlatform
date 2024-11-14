@@ -33,7 +33,7 @@ export const registerUserService = async (userData) => {
 
 export const loginUserService = async (userData) => {
     try {
-        const { email, password, otp } = userData;
+        const { email, password } = userData;
         const currentUser = await User.findOne({ email });
     
         if (!currentUser) {
@@ -45,10 +45,13 @@ export const loginUserService = async (userData) => {
         }
         const otpdata = await OTP.findOne({user_id:currentUser._id})
         const otpCode = otpdata.otp_code
-        if (otpCode != otp) {
-            throw new Error("OTP in not valid")
+        const otp = userData?.otp
+        if (otp && otpCode == otp) {
+          if (otpCode != otp) {
+              throw new Error("OTP in not valid")
+          }
+          await User.updateOne({_id: currentUser._id}, { isActive: true })
         }
-        await User.updateOne({_id: currentUser._id}, { isActive: true })
         const payload = {
           id: currentUser._id,
           name: currentUser.name,
@@ -60,6 +63,27 @@ export const loginUserService = async (userData) => {
       } catch (error) {
         return {success:false, error}
       }
+}
+
+export const activeUserService = async (userData) => {
+  try {
+    const { email, otp } = userData;
+    const currentUser = await User.findOne({ email });
+
+    if (!currentUser) {
+      throw new Error(errorMessages.USER_NOT_FOUND)
+    }
+    const otpdata = await OTP.findOne({user_id:currentUser._id})
+    const otpCode = otpdata.otp_code
+    
+    if (otpCode != otp) {
+      throw new Error("OTP in not valid")
+    }
+    await User.updateOne({_id: currentUser._id}, { isActive: true })
+    return {success:true, error:false}
+  } catch (error) {
+    return {success:false, error}
+  }
 }
 
 export const userProfileService = async (payload) => {
@@ -118,3 +142,42 @@ export const changePasswordService = async (userData) => {
         return {success:false, error}
     } 
 }
+
+export const createUserService = async (userData) => {
+  try {
+    const { email } = userData
+    
+    const currentUser = await User.findOne({ email });
+    if (!currentUser) {
+      const user = new User(userData);
+      await user.save();
+     
+      const oneTimePassword = otpGenerator();
+      
+      await sendMail(email, "OTP", `this is your OTP: ${oneTimePassword}`);
+      
+      const db_otp = new OTP({
+        user_id: user._id,
+        otp_code: oneTimePassword,
+      });
+      await db_otp.save();
+      return {success:true, error: false}
+    } else {
+      throw new Error(errorMessages.EMAIL_ALREADY_EXISTS);
+    }
+  } catch (error) {
+    return {success:false, error}
+  }
+}
+
+export const checkIsActive = async (userId) => {
+  try {
+      const user = await User.findOne({_id: userId});
+      if (!user) {
+          throw new Error(errorMessages.USER_NOT_FOUND);
+      }
+      return user.isActive;
+  } catch (error) {
+      return null;
+  }
+};
