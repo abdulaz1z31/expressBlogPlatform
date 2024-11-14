@@ -20,6 +20,17 @@ const limiter = rateLimit({
 app.use(express.json());
 app.use(limiter);
 
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  process.exit(1);
+});
+
 app.use("/user", userRouter);
 app.use("/course", courseRouter);
 app.use("/cartegory", cartegoryRouter);
@@ -30,11 +41,7 @@ app.use((req, res) => {
   res.status(statusCodes.NOT_FOUND).send(errorMessages.NOT_FOUND);
 });
 
-// app.use((err, req, res, next) => {
-//   if (err) {
-//     res.status(statusCodes.INTERNAL_SERVER_ERROR).send({ message: err });
-//   }
-// });
+
 app.listen(port, async () => {
   await connectMongodb();
   logger.info(`server is running on ${port} port`);

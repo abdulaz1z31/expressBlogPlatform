@@ -10,7 +10,7 @@ export const roleGuard = (...roles) => {
 
       
       const isActive = await checkIsActive(userId);
-
+    
       if (isActive && roles.includes(userRole) && role !== "superAdmin") {
         next();
       } else {

@@ -1,7 +1,6 @@
 import { ApiError, logger, statusCodes } from "../utils/index.js";
 import { Article, Comment } from "../database/models/index.model.js";
-import { checkIsActive } from "../utils/user.utils.js";
-
+import { checkIsActive } from "../service/index.service.js";
 export const isSelfRoleGuard = (...roles) => {
   return async (req, res, next) => {
     try {
@@ -9,7 +8,7 @@ export const isSelfRoleGuard = (...roles) => {
       const userId = req.user.id;
       const paramsId = req.params.id;
       const isActive = await checkIsActive(userId);
-
+      
       if (isActive && (roles.includes(userRole) || paramsId == userId)) {
         next();
       } else {

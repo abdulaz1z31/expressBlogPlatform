@@ -40,6 +40,8 @@ export const loginUserService = async (userData) => {
           throw new Error(errorMessages.USER_NOT_FOUND)
         }
         const passwordIsEqual = await currentUser.compare(password);
+        console.log(passwordIsEqual);
+        
         if (!passwordIsEqual) {
             throw new Error(errorMessages.INVALID_CREDENTIALS)
         }
@@ -170,6 +172,18 @@ export const createUserService = async (userData) => {
   }
 }
 
+export const searchUserService = async (searchName,skip, limit) => {
+  try {
+    const users = await User.find({ name: new RegExp(searchName, "i") }).skip(skip).limit(limit);
+    if (!users) {
+      throw new Error(errorMessages.USER_NOT_FOUND);
+    }
+    return {success:true, error:false, users}
+  } catch (error) {
+    return {success:false, error}
+  }
+}
+
 export const checkIsActive = async (userId) => {
   try {
       const user = await User.findOne({_id: userId});
@@ -181,3 +195,58 @@ export const checkIsActive = async (userId) => {
       return null;
   }
 };
+
+export const getAllUsersService = async (data) => {
+  try {
+    const {skip, limit} = data
+    const users = await User.find().skip(skip).limit(limit);
+    if (!users) {
+      throw new Error(errorMessages.USER_NOT_FOUND);
+    }
+    return {success:true, error:false, users}
+  } catch (error) {
+    return {success:false, error}
+  }
+}
+
+
+export const getUserByIdService = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error(errorMessages.USER_NOT_FOUND);
+    }
+    return user
+  } catch (error) {
+    return error
+  }
+}
+
+export const updateUserByIdService = async (userId, userData) => {
+  try {
+    const user = await User.findById(userId);
+    user.set(userData); 
+    await user.save();  
+
+
+    if (!user) {
+      throw new Error(errorMessages.USER_NOT_FOUND);
+    }
+    return {success:true, error:false, user}
+  } catch (error) {
+    return {success:false, error}
+  }
+}
+
+export const deleteUserByIdService = async (userId) => {
+  try {
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) {
+      throw new Error(errorMessages.USER_NOT_FOUND);
+    }
+    await OTP.findOneAndDelete({user_id:userId})
+    return { success : true, error : false}
+  } catch (error) {
+    return { success : false, error}
+  }
+}
