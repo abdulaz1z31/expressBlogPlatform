@@ -14,7 +14,7 @@ import {
 } from "../service/index.service.js";
 
 import { ApiError, errorMessages, statusCodes } from "../utils/index.js";
-import { logger } from "../logger.js";
+import { logger } from "../utils/index.js";
 
 //bunda user malumotlari db yozadi va email ga opt jonatadi
 export const registerUser = async (req, res, next) => {
